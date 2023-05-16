@@ -1,5 +1,7 @@
 package com.projectY.splitYourBills.controller;
 
+import java.util.List;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.projectY.splitYourBills.model.AddMemberReq;
 import com.projectY.splitYourBills.model.GroupDTO;
 import com.projectY.splitYourBills.service.GroupService;
 
@@ -25,31 +28,41 @@ public class GroupController {
         this.groupService = groupService;
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<GroupDTO> createGroup(@RequestBody GroupDTO groupCreateDTO) {
         GroupDTO createdGroup = groupService.createGroup(groupCreateDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdGroup);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     public ResponseEntity<GroupDTO> getGroupById(@PathVariable Long id) {
         GroupDTO groupDTO = groupService.getGroupById(id);
         return ResponseEntity.ok(groupDTO);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<GroupDTO> updateGroupById(@PathVariable Long id, @RequestBody GroupDTO groupUpdateDTO) {
-        GroupDTO updatedGroup = groupService.updateGroup(id,groupUpdateDTO);
+    @PutMapping("update/{id}")
+    public ResponseEntity<GroupDTO> updateGroupById(@PathVariable Long id, @RequestBody GroupDTO groupDto) {
+        GroupDTO updatedGroup = groupService.updateGroup(id,groupDto);
         return ResponseEntity.ok(updatedGroup);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("delete/{id}")
     public ResponseEntity<Void> deleteGroupById(@PathVariable Long id) {
         groupService.deleteGroup(id);
         return ResponseEntity.noContent().build();
     }
     
-    // Add other controller methods for handling group members and expenses
+    @GetMapping("/get/all")
+    public ResponseEntity<List<GroupDTO>> getAll(){
+    	List<GroupDTO> allGroups = groupService.getAllGroups();
+    	return ResponseEntity.status(HttpStatus.OK).body(allGroups);
+    }
+    
+    @PutMapping("/addMembers")
+    public ResponseEntity<GroupDTO> addMembers(@RequestBody AddMemberReq members){
+    	GroupDTO addMembers = groupService.addMembers(members);
+    	return ResponseEntity.ok(addMembers);
+    }
     
 }
 

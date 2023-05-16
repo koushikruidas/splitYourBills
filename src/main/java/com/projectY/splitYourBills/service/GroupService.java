@@ -2,6 +2,7 @@ package com.projectY.splitYourBills.service;
 
 import java.util.List;
 
+import com.projectY.splitYourBills.model.AddMemberReq;
 import com.projectY.splitYourBills.model.GroupDTO;
 
 public interface GroupService {
@@ -15,5 +16,7 @@ public interface GroupService {
     List<GroupDTO> getAllGroups();
     
     void deleteGroup(Long id);
+    
+    GroupDTO addMembers(AddMemberReq members);
 }
 

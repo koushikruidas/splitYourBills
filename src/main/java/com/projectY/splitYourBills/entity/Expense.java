@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -26,7 +27,7 @@ import lombok.NoArgsConstructor;
 
 @Builder
 @Data
-@Entity
+@Entity(name = "t_expense")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Expense {
@@ -40,23 +41,23 @@ public class Expense {
     
     private LocalDate date;
    
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     private User paidBy;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(
             name = "expense_users",
             joinColumns = @JoinColumn(name = "expense_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private List<User> users;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "entry_group_id")
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
     private Group group;
     
     private ExpenseSplitType splitType;
     
-    @OneToMany(mappedBy = "expense" ,fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "expense" ,cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Default
     private List<Split> splitDetails = new ArrayList<>();
 

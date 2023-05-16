@@ -1,11 +1,10 @@
+/*
 package com.projectY.splitYourBills.service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -16,8 +15,6 @@ import com.projectY.splitYourBills.entity.Expense;
 import com.projectY.splitYourBills.entity.Group;
 import com.projectY.splitYourBills.entity.User;
 import com.projectY.splitYourBills.model.ExpenseDTO;
-import com.projectY.splitYourBills.model.FriendDTO;
-import com.projectY.splitYourBills.model.GroupDTO;
 import com.projectY.splitYourBills.model.UserDTO;
 import com.projectY.splitYourBills.repo.ExpenseRepository;
 import com.projectY.splitYourBills.repo.GroupRepository;
@@ -42,48 +39,10 @@ public class UserService1 {
 	}
 
 	@Transactional
-	public User createUser(UserDTO userDto) {
+	public UserDTO createUser(UserDTO userDto) {
 		User user = mapper.map(userDto, User.class);
-		return userRepository.save(user);
-	}
-
-	@Transactional
-    public Group createGroup(GroupDTO groupDTO) {
-        Group group = Group.builder()
-                .name(groupDTO.getName())
-                .members(
-                		groupDTO.getMemberIds().stream()
-                		.map(i -> userRepository.findById(i).get())
-                		.collect(Collectors.toList())
-                		)
-                .expenses(new ArrayList<>())
-                .build();
-        groupRepository.save(group);
-        for (Long memberId : groupDTO.getMemberIds()) {
-            Optional<User> optionalUser = userRepository.findById(memberId);
-            if (optionalUser.isPresent()) {
-                User member = optionalUser.get();
-                group.getMembers().add(member);
-                member.getGroups().add(group);
-            }
-        }
-        System.out.println(group.toString());
-        groupRepository.save(group);
-        return group;
-    }
-
-	@Transactional
-	public void addFriend(FriendDTO friendDTO) {
-		Optional<User> optionalUser = userRepository.findById(friendDTO.getFriendId());
-		Optional<User> optionalFriend = userRepository.findById(friendDTO.getFriendId());
-		if (optionalUser.isPresent() && optionalFriend.isPresent()) {
-			User user = optionalUser.get();
-			User friend = optionalFriend.get();
-//            user.getFriends().add(friend);
-//            friend.getFriends().add(user);
-			userRepository.save(user);
-			userRepository.save(friend);
-		}
+		userRepository.save(user);
+		return mapper.map(user, UserDTO.class);
 	}
 
 	@Transactional
@@ -109,3 +68,5 @@ public class UserService1 {
 		return splits;
 	}
 }
+
+*/
