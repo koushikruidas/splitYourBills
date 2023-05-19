@@ -11,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import com.projectY.splitYourBills.entity.Expense;
+import com.projectY.splitYourBills.entity.Split;
 import com.projectY.splitYourBills.entity.User;
 import com.projectY.splitYourBills.exception.ResourceNotFoundException;
 import com.projectY.splitYourBills.model.ExpenseDTO;
@@ -18,7 +19,6 @@ import com.projectY.splitYourBills.repo.ExpenseRepository;
 import com.projectY.splitYourBills.repo.GroupRepository;
 import com.projectY.splitYourBills.repo.UserRepository;
 import com.projectY.splitYourBills.utility.ExpenseSplitType;
-import com.projectY.splitYourBills.utility.Split;
 
 @Service
 public class ExpenseServiceImpl implements ExpenseService {

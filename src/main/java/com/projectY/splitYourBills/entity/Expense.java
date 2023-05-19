@@ -17,7 +17,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import com.projectY.splitYourBills.utility.ExpenseSplitType;
-import com.projectY.splitYourBills.utility.Split;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -10,8 +10,12 @@ import com.projectY.splitYourBills.entity.Expense;
 
 @Repository
 public interface ExpenseRepository extends JpaRepository<Expense, Long> {
-	@Query(value = "SELECT * FROM expense e JOIN expense_users eu ON e.id = eu.expense_id "
+	@Query(value = "SELECT * FROM t_expense e JOIN expense_users eu ON e.id = eu.expense_id "
 			+ "WHERE eu.user_id = ?1", nativeQuery = true)
 	List<Expense> findByUsers_Id(long userId);
+	
+	@Query(value = "SELECT * FROM t_expense e "
+			+ "WHERE e.group_id = ?1", nativeQuery = true)
+	List<Expense> findByGroupId(long groupId);
 
 }

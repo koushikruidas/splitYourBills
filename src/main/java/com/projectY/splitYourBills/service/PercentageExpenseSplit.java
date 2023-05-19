@@ -2,7 +2,7 @@ package com.projectY.splitYourBills.service;
 
 import java.util.List;
 
-import com.projectY.splitYourBills.utility.Split;
+import com.projectY.splitYourBills.entity.Split;
 
 public class PercentageExpenseSplit implements ExpenseSplit {
     @Override
