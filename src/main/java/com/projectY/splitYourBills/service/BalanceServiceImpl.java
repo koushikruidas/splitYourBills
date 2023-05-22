@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import com.projectY.splitYourBills.entity.Expense;
@@ -13,6 +14,7 @@ import com.projectY.splitYourBills.entity.User;
 import com.projectY.splitYourBills.entity.UserExpenseBalanceSheet;
 import com.projectY.splitYourBills.exception.ResourceNotFoundException;
 import com.projectY.splitYourBills.model.Result;
+import com.projectY.splitYourBills.model.UserDTO;
 import com.projectY.splitYourBills.repo.ExpenseRepository;
 import com.projectY.splitYourBills.repo.SplitRepository;
 import com.projectY.splitYourBills.repo.UserRepository;
@@ -23,13 +25,16 @@ public class BalanceServiceImpl implements BalanceService {
 	private UserRepository userRepository;
     private ExpenseRepository expenseRepository;
     private SplitRepository splitRepository;
+    private ModelMapper mapper;
 
 	public BalanceServiceImpl (UserRepository userRepository
 			, ExpenseRepository expenseRepository
-			, SplitRepository splitRepository) {
+			, SplitRepository splitRepository
+			, ModelMapper mapper) {
 		this.userRepository = userRepository;
 		this.expenseRepository = expenseRepository;
 		this.splitRepository = splitRepository;
+		this.mapper = mapper; 
 	}
     
     public List<Result> getGroupTransacions(long groupId){
@@ -55,41 +60,42 @@ public class BalanceServiceImpl implements BalanceService {
     public UserExpenseBalanceSheet minTransfer(List<Result> transactions, long groupId, long userId) {
     	UserExpenseBalanceSheet userExpenseBalanceSheet;
     	User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("user not found"));
+    	UserDTO userDto = mapper.map(user, UserDTO.class);
     	
     	List<Expense> expenses = expenseRepository.findByGroupId(groupId).stream()
     			.filter(i -> i.getPaidBy().getId() == userId)
     			.collect(Collectors.toList());
     	double totalPayment =  expenses.stream().map(i -> i.getAmount()).reduce(0d,(a, b) -> a + b);
     	
-		Map<User, Double> memberVsBalanceMap = new HashMap<>();
+		Map<UserDTO, Double> memberVsBalanceMap = new HashMap<>();
 		for(Result txn : transactions) {
-			User fromUser = txn.getFromUser();
+			UserDTO fromUser = mapper.map(txn.getFromUser(), UserDTO.class);
 			double amount = txn.getAmount();
-			User toUser = txn.getToUser();
+			UserDTO toUser = mapper.map(txn.getToUser(),UserDTO.class);
 			memberVsBalanceMap.put(fromUser, memberVsBalanceMap.getOrDefault(fromUser, 0d) - amount);
 			memberVsBalanceMap.put(toUser, memberVsBalanceMap.getOrDefault(toUser, 0d) + amount);
 		}
-		Map<User, Double> filteredMap = memberVsBalanceMap.entrySet().stream()
+		Map<UserDTO, Double> filteredMap = memberVsBalanceMap.entrySet().stream()
 				.filter(i -> i.getKey().getId() != userId)
 				.collect(Collectors.toMap(i -> i.getKey(), j -> j.getValue()));
 		
-		if (totalPayment + memberVsBalanceMap.get(user) == 0) {
+		if (totalPayment + memberVsBalanceMap.get(userDto) == 0) {
 			userExpenseBalanceSheet = UserExpenseBalanceSheet.builder()
 			.userVsBalance(filteredMap)
 			.totalPayment(totalPayment)
 			.build();
-		}else if (totalPayment + memberVsBalanceMap.get(user) > 0) 
+		}else if (totalPayment + memberVsBalanceMap.get(userDto) > 0) 
 		{
 			userExpenseBalanceSheet = UserExpenseBalanceSheet.builder()
 			.userVsBalance(filteredMap)
 			.totalPayment(totalPayment)
-			.totalYouGetBack(memberVsBalanceMap.get(user))
+			.totalYouGetBack(memberVsBalanceMap.get(userDto))
 			.build();
 		}else {
 			userExpenseBalanceSheet = UserExpenseBalanceSheet.builder()
 			.userVsBalance(filteredMap)
 			.totalPayment(totalPayment)
-			.totalYouOwe(memberVsBalanceMap.get(user))
+			.totalYouOwe(memberVsBalanceMap.get(userDto))
 			.build();
 		}
 		
