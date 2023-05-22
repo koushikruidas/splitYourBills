@@ -32,6 +32,7 @@ public class BalanceController {
 	public ResponseEntity<UserExpenseBalanceSheet> getUserBalances(@PathVariable long groupId, @RequestParam long userId) {
 		List<Result> groupTransactions = balanceService.getGroupTransacions(groupId);
 		Map<User,Double> sheet = transactionService.minTransfer(groupTransactions, userId);
-		return ResponseEntity.ok(null);
+		UserExpenseBalanceSheet response = balanceService.minTransfer(groupTransactions, groupId, userId);
+		return ResponseEntity.ok(response);
 	}
 }

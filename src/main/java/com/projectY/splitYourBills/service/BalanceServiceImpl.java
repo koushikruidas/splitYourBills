@@ -55,9 +55,11 @@ public class BalanceServiceImpl implements BalanceService {
     public UserExpenseBalanceSheet minTransfer(List<Result> transactions, long groupId, long userId) {
     	UserExpenseBalanceSheet userExpenseBalanceSheet;
     	User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("user not found"));
+    	
     	List<Expense> expenses = expenseRepository.findByGroupId(groupId).stream()
     			.filter(i -> i.getPaidBy().getId() == userId)
     			.collect(Collectors.toList());
+    	double totalPayment =  expenses.stream().map(i -> i.getAmount()).reduce(0d,(a, b) -> a + b);
     	
 		Map<User, Double> memberVsBalanceMap = new HashMap<>();
 		for(Result txn : transactions) {
@@ -68,9 +70,9 @@ public class BalanceServiceImpl implements BalanceService {
 			memberVsBalanceMap.put(toUser, memberVsBalanceMap.getOrDefault(toUser, 0d) + amount);
 		}
 		Map<User, Double> filteredMap = memberVsBalanceMap.entrySet().stream()
-				.filter(i -> i.getValue() != userId)
+				.filter(i -> i.getKey().getId() != userId)
 				.collect(Collectors.toMap(i -> i.getKey(), j -> j.getValue()));
-		double totalPayment =  expenses.stream().map(i -> i.getAmount()).reduce(0d,(a, b) -> a + b);
+		
 		if (totalPayment + memberVsBalanceMap.get(user) == 0) {
 			userExpenseBalanceSheet = UserExpenseBalanceSheet.builder()
 			.userVsBalance(filteredMap)
