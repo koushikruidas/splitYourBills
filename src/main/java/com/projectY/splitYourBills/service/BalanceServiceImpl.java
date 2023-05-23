@@ -13,7 +13,7 @@ import com.projectY.splitYourBills.entity.Split;
 import com.projectY.splitYourBills.entity.User;
 import com.projectY.splitYourBills.entity.UserExpenseBalanceSheet;
 import com.projectY.splitYourBills.exception.ResourceNotFoundException;
-import com.projectY.splitYourBills.model.Result;
+import com.projectY.splitYourBills.model.TransactionsDTO;
 import com.projectY.splitYourBills.model.UserDTO;
 import com.projectY.splitYourBills.repo.ExpenseRepository;
 import com.projectY.splitYourBills.repo.SplitRepository;
@@ -37,15 +37,15 @@ public class BalanceServiceImpl implements BalanceService {
 		this.mapper = mapper; 
 	}
     
-    public List<Result> getGroupTransacions(long groupId){
+    public List<TransactionsDTO> getGroupTransacions(long groupId){
     	List<Expense> expenses = expenseRepository.findByGroupId(groupId);
     	List<Long> expenseIds = expenses.stream().map(i -> i.getId()).collect(Collectors.toList());
     	List<Split> splits = splitRepository.findAllByExpenseId(expenseIds);
     	
-    	 List<Result> results = splits.stream()
+    	 List<TransactionsDTO> results = splits.stream()
                  .flatMap(split -> expenses.stream()
-                         .filter(expense -> split.getExpense().getId() == expense.getId() && expense.getGroup().getId() == groupId)
-                         .map(expense -> Result.builder()
+                         .filter(expense -> split.getExpense().getId() == expense.getId())
+                         .map(expense -> TransactionsDTO.builder()
                         		 .fromUser(userRepository.findById(split.getUserId()).get())
                         		 .amount(split.getAmount())
                         		 .toUser(expense.getPaidBy())
@@ -57,7 +57,16 @@ public class BalanceServiceImpl implements BalanceService {
     	 return results;
     }   
     
-    public UserExpenseBalanceSheet minTransfer(List<Result> transactions, long groupId, long userId) {
+	/*
+	 * transactions: {
+	 * 	[fromUser, amount, toUser]
+	 * 	[2,8250,1],
+	 * 	[3,8500,1],
+	 * 	[1,5100,3],
+	 * 	[2,4950,3]
+	 * }
+	 */    
+    public UserExpenseBalanceSheet minTransfer(List<TransactionsDTO> transactions, long groupId, long userId) {
     	UserExpenseBalanceSheet userExpenseBalanceSheet;
     	User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("user not found"));
     	UserDTO userDto = mapper.map(user, UserDTO.class);
@@ -68,7 +77,7 @@ public class BalanceServiceImpl implements BalanceService {
     	double totalPayment =  expenses.stream().map(i -> i.getAmount()).reduce(0d,(a, b) -> a + b);
     	
 		Map<UserDTO, Double> memberVsBalanceMap = new HashMap<>();
-		for(Result txn : transactions) {
+		for(TransactionsDTO txn : transactions) {
 			UserDTO fromUser = mapper.map(txn.getFromUser(), UserDTO.class);
 			double amount = txn.getAmount();
 			UserDTO toUser = mapper.map(txn.getToUser(),UserDTO.class);
@@ -100,6 +109,10 @@ public class BalanceServiceImpl implements BalanceService {
 		}
 		
 		return userExpenseBalanceSheet;
+	}
+    
+	public void settleMent() {
+		dfs(null, 0);
 	}
 	
 	private int dfs(List<Double> balances, int currentIndex) {

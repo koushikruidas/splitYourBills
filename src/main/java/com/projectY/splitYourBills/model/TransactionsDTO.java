@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Result {
+public class TransactionsDTO {
     private User fromUser;
     private double amount;
     private User toUser;

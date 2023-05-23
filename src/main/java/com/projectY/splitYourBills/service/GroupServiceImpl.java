@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import com.projectY.splitYourBills.entity.Group;
 import com.projectY.splitYourBills.entity.User;
 import com.projectY.splitYourBills.exception.ResourceNotFoundException;
-import com.projectY.splitYourBills.model.AddMemberReq;
+import com.projectY.splitYourBills.model.AddMemberReqDTO;
 import com.projectY.splitYourBills.model.GroupDTO;
 import com.projectY.splitYourBills.repo.GroupRepository;
 import com.projectY.splitYourBills.repo.UserRepository;
@@ -92,7 +92,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
 	@Override
-	public GroupDTO addMembers(AddMemberReq members) {
+	public GroupDTO addMembers(AddMemberReqDTO members) {
 		List<User> memberList = userRepository.findAllByIds(members.getMemberIds());
 		Group group = groupRepository.findById(members.getGroupId())
 				.orElseThrow(
