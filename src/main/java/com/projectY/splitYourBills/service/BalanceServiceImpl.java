@@ -3,6 +3,7 @@ package com.projectY.splitYourBills.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -11,10 +12,10 @@ import org.springframework.stereotype.Service;
 import com.projectY.splitYourBills.entity.Expense;
 import com.projectY.splitYourBills.entity.Split;
 import com.projectY.splitYourBills.entity.User;
-import com.projectY.splitYourBills.entity.UserExpenseBalanceSheet;
 import com.projectY.splitYourBills.exception.ResourceNotFoundException;
 import com.projectY.splitYourBills.model.TransactionsDTO;
 import com.projectY.splitYourBills.model.UserDTO;
+import com.projectY.splitYourBills.model.UserExpenseBalanceSheetDTO;
 import com.projectY.splitYourBills.repo.ExpenseRepository;
 import com.projectY.splitYourBills.repo.SplitRepository;
 import com.projectY.splitYourBills.repo.UserRepository;
@@ -66,8 +67,8 @@ public class BalanceServiceImpl implements BalanceService {
 	 * 	[2,4950,3]
 	 * }
 	 */    
-    public UserExpenseBalanceSheet minTransfer(List<TransactionsDTO> transactions, long groupId, long userId) {
-    	UserExpenseBalanceSheet userExpenseBalanceSheet;
+    public UserExpenseBalanceSheetDTO minTransfer(List<TransactionsDTO> transactions, long groupId, long userId) {
+    	UserExpenseBalanceSheetDTO userExpenseBalanceSheet;
     	User user = userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("user not found"));
     	UserDTO userDto = mapper.map(user, UserDTO.class);
     	
@@ -89,24 +90,31 @@ public class BalanceServiceImpl implements BalanceService {
 				.collect(Collectors.toMap(i -> i.getKey(), j -> j.getValue()));
 		
 		if (totalPayment + memberVsBalanceMap.get(userDto) == 0) {
-			userExpenseBalanceSheet = UserExpenseBalanceSheet.builder()
+			userExpenseBalanceSheet = UserExpenseBalanceSheetDTO.builder()
 			.userVsBalance(filteredMap)
 			.totalPayment(totalPayment)
 			.build();
 		}else if (totalPayment + memberVsBalanceMap.get(userDto) > 0) 
 		{
-			userExpenseBalanceSheet = UserExpenseBalanceSheet.builder()
+			userExpenseBalanceSheet = UserExpenseBalanceSheetDTO.builder()
 			.userVsBalance(filteredMap)
 			.totalPayment(totalPayment)
 			.totalYouGetBack(memberVsBalanceMap.get(userDto))
 			.build();
 		}else {
-			userExpenseBalanceSheet = UserExpenseBalanceSheet.builder()
+			userExpenseBalanceSheet = UserExpenseBalanceSheetDTO.builder()
 			.userVsBalance(filteredMap)
 			.totalPayment(totalPayment)
 			.totalYouOwe(memberVsBalanceMap.get(userDto))
 			.build();
 		}
+		
+		List<Double> balances = memberVsBalanceMap.entrySet().stream()
+				.map(Entry::getValue)
+				.collect(Collectors.toList()) ;
+
+		int dfs = dfs(balances,0);
+		System.out.println(dfs);
 		
 		return userExpenseBalanceSheet;
 	}

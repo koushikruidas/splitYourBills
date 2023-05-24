@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.projectY.splitYourBills.entity.UserExpenseBalanceSheet;
 import com.projectY.splitYourBills.model.TransactionsDTO;
+import com.projectY.splitYourBills.model.UserExpenseBalanceSheetDTO;
 import com.projectY.splitYourBills.service.BalanceService;
 
 @RestController
@@ -24,9 +24,9 @@ public class BalanceController {
 	}
 
 	@GetMapping("balance/{groupId}")
-	public ResponseEntity<UserExpenseBalanceSheet> getUserBalances(@PathVariable long groupId, @RequestParam long userId) {
+	public ResponseEntity<UserExpenseBalanceSheetDTO> getUserBalances(@PathVariable long groupId, @RequestParam long userId) {
 		List<TransactionsDTO> groupTransactions = balanceService.getGroupTransacions(groupId);
-		UserExpenseBalanceSheet response = balanceService.minTransfer(groupTransactions, groupId, userId);
+		UserExpenseBalanceSheetDTO response = balanceService.minTransfer(groupTransactions, groupId, userId);
 		return ResponseEntity.ok(response);
 	}
 }

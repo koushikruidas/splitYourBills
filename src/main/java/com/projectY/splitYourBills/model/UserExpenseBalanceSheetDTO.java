@@ -1,8 +1,6 @@
-package com.projectY.splitYourBills.entity;
+package com.projectY.splitYourBills.model;
 
 import java.util.Map;
-
-import com.projectY.splitYourBills.model.UserDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserExpenseBalanceSheet {
+public class UserExpenseBalanceSheetDTO {
 
 	private Map<UserDTO, Double> userVsBalance;
 	private double totalPayment;
