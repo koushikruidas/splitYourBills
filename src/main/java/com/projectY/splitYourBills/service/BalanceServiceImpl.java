@@ -1,9 +1,9 @@
 package com.projectY.splitYourBills.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -13,6 +13,9 @@ import com.projectY.splitYourBills.entity.Expense;
 import com.projectY.splitYourBills.entity.Split;
 import com.projectY.splitYourBills.entity.User;
 import com.projectY.splitYourBills.exception.ResourceNotFoundException;
+import com.projectY.splitYourBills.model.Path;
+import com.projectY.splitYourBills.model.SNode;
+import com.projectY.splitYourBills.model.SPair;
 import com.projectY.splitYourBills.model.TransactionsDTO;
 import com.projectY.splitYourBills.model.UserDTO;
 import com.projectY.splitYourBills.model.UserExpenseBalanceSheetDTO;
@@ -109,41 +112,80 @@ public class BalanceServiceImpl implements BalanceService {
 			.build();
 		}
 		
-		List<Double> balances = memberVsBalanceMap.entrySet().stream()
-				.map(Entry::getValue)
-				.collect(Collectors.toList()) ;
-
-		int dfs = dfs(balances,0);
-		System.out.println(dfs);
+		List<SNode> positive = memberVsBalanceMap.entrySet().stream()
+				.filter(i -> i.getValue() > 0)
+				.map(i -> SNode.builder()
+						.user(i.getKey())
+						.amt(i.getValue())
+						.build()
+						)
+				.collect(Collectors.toList());
 		
+		List<SNode> negative = memberVsBalanceMap.entrySet().stream()
+				.filter(i -> i.getValue() < 0)
+				.map(i -> SNode.builder()
+						.user(i.getKey())
+						.amt(i.getValue())
+						.build()
+						)
+				.collect(Collectors.toList());
+		SPair settlements = recur(positive, negative);
+		System.out.println(settlements.toString());
 		return userExpenseBalanceSheet;
 	}
-    
-	public void settleMent() {
-		dfs(null, 0);
-	}
 	
-	private int dfs(List<Double> balances, int currentIndex) {
-		int minTxnCount = Integer.MAX_VALUE;
-		if(balances.size() == 0 || currentIndex >= balances.size()) {
-			return 0;
+	private SPair recur(List<SNode> pos, List<SNode> neg) {
+		if (pos.size() == 0 && neg.size() == 0) {
+			return new SPair(0, new ArrayList<Path>());
 		}
-		if(balances.get(currentIndex) == 0) {
-			return dfs(balances, currentIndex + 1);
-		}
-		double currVal = balances.get(currentIndex);
-		for(int txnIndex = currentIndex + 1; txnIndex < balances.size(); txnIndex++) {
-			double nextVal = balances.get(txnIndex);
-			if(currVal * nextVal < 0) {
-				balances.set(txnIndex, currVal + nextVal);
-				minTxnCount = Math.min(minTxnCount, 1 + dfs(balances,currentIndex+1));
-				balances.set(txnIndex, nextVal);
-				if(currVal + nextVal == 0) {
-					break;
-				}
+
+		double negVal = neg.get(0).getAmt();
+
+		// find a perfect +ve value
+		int min = Integer.MAX_VALUE;
+		SPair bestMatch = new SPair(0, new ArrayList<Path>());
+		double amt = -1;
+		double minAmt = -1;
+		UserDTO userWhoOwes = null;
+		for (int i = 0; i < pos.size(); i++) {
+
+			// copy of current lists
+			ArrayList<SNode> new_pos = new ArrayList<>(pos);
+			ArrayList<SNode> new_neg = new ArrayList<>(neg);
+
+			// Assuming both the items will become 0. This the best case.
+			new_pos.remove(i);
+			new_neg.remove(0);
+
+			if (pos.get(i).getAmt() == -1 * negVal) {
+				// Best case scenario
+				// Nothing to do as already both are removed from the respective lists
+				amt = negVal;
+			} else if (pos.get(i).getAmt() > -1 * negVal) {
+				// Negative will become 0 but there will be some +ve left
+				new_pos.add(new SNode(pos.get(i).getAmt() + negVal, pos.get(i).getUser()));
+				amt = negVal;
+			} else {
+				// There will be some -ve left
+				new_neg.add(new SNode(pos.get(i).getAmt() + negVal, neg.get(0).getUser()));
+				amt = pos.get(i).getAmt();
+			}
+			// Take the best match among all the +ve
+			SPair temp = recur(new_pos, new_neg);
+			if (temp.getTransactionCount() < min) {
+				min = temp.getTransactionCount();
+				bestMatch = temp;
+				minAmt = Math.abs(amt);
+				userWhoOwes = pos.get(i).getUser();
 			}
 		}
-		return minTxnCount;
+		
+		Path path = new Path(neg.get(0).getUser(), userWhoOwes, minAmt);
+		
+		bestMatch.setTransactionCount(1 + min);
+		bestMatch.getPath().add(path);
+
+		return bestMatch;
 	}
     
 }
