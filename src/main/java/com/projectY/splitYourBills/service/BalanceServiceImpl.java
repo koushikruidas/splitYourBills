@@ -145,7 +145,7 @@ public class BalanceServiceImpl implements BalanceService {
 		int min = Integer.MAX_VALUE;
 		SPair bestMatch = new SPair(0, new ArrayList<Path>());
 		double amt = -1;
-		double minAmt = -1;
+		double amtToBePaid = -1;
 		UserDTO userWhoOwes = null;
 		for (int i = 0; i < pos.size(); i++) {
 
@@ -175,12 +175,12 @@ public class BalanceServiceImpl implements BalanceService {
 			if (temp.getTransactionCount() < min) {
 				min = temp.getTransactionCount();
 				bestMatch = temp;
-				minAmt = Math.abs(amt);
+				amtToBePaid = Math.abs(amt);
 				userWhoOwes = pos.get(i).getUser();
 			}
 		}
 		
-		Path path = new Path(neg.get(0).getUser(), userWhoOwes, minAmt);
+		Path path = new Path(neg.get(0).getUser(), userWhoOwes, amtToBePaid);
 		
 		bestMatch.setTransactionCount(1 + min);
 		bestMatch.getPath().add(path);
