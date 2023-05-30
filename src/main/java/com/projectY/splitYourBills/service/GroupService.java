@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.projectY.splitYourBills.model.AddMemberReqDTO;
 import com.projectY.splitYourBills.model.GroupDTO;
+import com.projectY.splitYourBills.model.UserDTO;
 
 public interface GroupService {
     
@@ -18,5 +19,7 @@ public interface GroupService {
     void deleteGroup(Long id);
     
     GroupDTO addMembers(AddMemberReqDTO members);
+    
+    List<UserDTO> getMembers(long id);
 }
 

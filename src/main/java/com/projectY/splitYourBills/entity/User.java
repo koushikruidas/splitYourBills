@@ -2,6 +2,7 @@ package com.projectY.splitYourBills.entity;
 
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -27,8 +28,10 @@ public class User {
 	
 	private String name;
 
+	@Column(unique = true)
     private String email;
 
+	@Column(unique = true)
     private String phone;
 
     @OneToMany(mappedBy = "paidBy")

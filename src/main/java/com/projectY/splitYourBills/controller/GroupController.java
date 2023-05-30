@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.projectY.splitYourBills.model.AddMemberReqDTO;
 import com.projectY.splitYourBills.model.GroupDTO;
+import com.projectY.splitYourBills.model.UserDTO;
 import com.projectY.splitYourBills.service.GroupService;
 
 @RestController
@@ -62,6 +63,12 @@ public class GroupController {
     public ResponseEntity<GroupDTO> addMembers(@RequestBody AddMemberReqDTO members){
     	GroupDTO addMembers = groupService.addMembers(members);
     	return ResponseEntity.ok(addMembers);
+    }
+    
+    @GetMapping("/getMembers/{id}")
+    public ResponseEntity<List<UserDTO>> getMembers(@PathVariable long id){
+    	List<UserDTO> members = groupService.getMembers(id);
+    	return ResponseEntity.ok(members);
     }
     
 }

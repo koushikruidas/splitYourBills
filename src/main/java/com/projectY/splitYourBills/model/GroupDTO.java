@@ -17,7 +17,7 @@ public class GroupDTO {
 
     private String name;
 
-    private List<Long> memberIds;
+    private List<String> membersEmailOrPhone;
     
 }
 

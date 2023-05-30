@@ -11,4 +11,8 @@ import com.projectY.splitYourBills.entity.User;
 public interface UserRepository extends JpaRepository<User, Long> {
 	@Query(value = "SELECT * FROM t_user WHERE id IN :ids", nativeQuery = true)
 	List<User> findAllByIds(@Param("ids") List<Long> ids);
+	
+	@Query(value = "SELECT * FROM t_user u WHERE u.email IN :emailOrPhone "
+			+ "OR u.phone IN :emailOrPhone", nativeQuery = true)
+	List<User> findByEmailOrPhone(List<String> emailOrPhone);
 }
